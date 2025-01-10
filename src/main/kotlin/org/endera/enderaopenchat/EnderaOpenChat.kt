@@ -31,17 +31,6 @@ class EnderaOpenChat : JavaPlugin() {
 
     override fun onEnable() {
         plugin = this
-
-        val discordSRV = Bukkit.getPluginManager().getPlugin("DiscordSRV")
-
-
-        if (discordSRV != null) {
-            DiscordSRV.api.subscribe(discordsrvListener)
-        } else {
-            logger.severe("DiscordSRV is not installed, skipping initialization.")
-        }
-
-        val metrics = MetricsLite(this, 24253)
         bukkitDispatcher = BukkitDispatcher(this)
         configFile = File("${dataFolder}/config.yml")
         rlogger = logger
@@ -58,6 +47,16 @@ class EnderaOpenChat : JavaPlugin() {
         } catch (e: PluginException) {
             logger.severe("Critical error loading configuration: ${e.message}")
             server.pluginManager.disablePlugin(this)
+        }
+
+        val metrics = MetricsLite(this, 24253)
+
+        val discordSRV = Bukkit.getPluginManager().getPlugin("DiscordSRV")
+
+        if (discordSRV != null) {
+            DiscordSRV.api.subscribe(discordsrvListener)
+        } else {
+            logger.warning("DiscordSRV is not installed, skipping initialization.")
         }
 
         val pm = Bukkit.getPluginManager()
