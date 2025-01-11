@@ -55,6 +55,7 @@ data class Messages(
     val prefix: String,
     val reload: String,
     val usage: Usage,
+    val localnoone: String,
     val playernotfound: String,
 )
 

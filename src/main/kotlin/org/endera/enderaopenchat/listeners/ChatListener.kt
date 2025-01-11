@@ -15,6 +15,7 @@ import org.endera.enderalib.utils.async.BukkitRegionDispatcher
 import org.endera.enderaopenchat.bukkitDispatcher
 import org.endera.enderaopenchat.config.config
 import org.endera.enderaopenchat.plugin
+import org.endera.enderaopenchat.utils.cparse
 
 
 class ChatListener : Listener {
@@ -54,6 +55,10 @@ class ChatListener : Listener {
                 }
             }
 
+            if (config.messages.localnoone.isNotEmpty() && nearbyPlayers.size == 1) {
+                player.sendActionBar(config.messages.localnoone.cparse())
+            }
+
             event.viewers().clear()
             event.viewers().addAll(nearbyPlayers)
             event.viewers().add(Bukkit.getConsoleSender())
@@ -71,6 +76,7 @@ class ChatListener : Listener {
                 ).stringToComponent()
             )
         }
+
     }
 
 }

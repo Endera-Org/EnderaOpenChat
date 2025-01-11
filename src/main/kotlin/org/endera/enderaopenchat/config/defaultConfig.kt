@@ -3,7 +3,7 @@ package org.endera.enderaopenchat.config
 val defaultConfig = ConfigScheme(
     localChat = LocalChat(
         range = 100,
-        format = "<green>[L] <reset>%luckperms_prefix%{player}: {message}"
+        format = "<green>[L] <reset>%luckperms_prefix%{player}: {message}",
     ),
     globalChat = GlobalChat(
         prefix = "!",
@@ -36,6 +36,7 @@ val defaultConfig = ConfigScheme(
         prefix = "<green>[EChat]<reset>",
         reload = "{prefix} Plugin configuration reloaded",
         playernotfound = "{prefix} <red>Player not found",
+        localnoone = "<red>No players nearby!",
         usage = Usage(
             msg = "{prefix} <red>Command usage: /msg (player) (message)"
         )
