@@ -30,7 +30,11 @@ class ChatListener : Listener {
             val stringMessage = event.message().componentToString()
 
             if (stringMessage.startsWith(config.globalChat.prefix)) {
-//            val renderer = EChatRenderer()
+
+                if (stringMessage.length == 1) {
+                    event.isCancelled = true
+                    return@runBlocking
+                }
 
                 event.renderer { _, _, message, _ -> message }
                 event.message(
