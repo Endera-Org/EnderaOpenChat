@@ -1,10 +1,13 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 plugins {
-    kotlin("jvm") version "2.0.20"
-    kotlin("plugin.serialization") version "2.0.20" apply true
+    kotlin("jvm") version "2.1.10"
+    kotlin("plugin.serialization") version "2.1.10" apply true
 }
 
 group = "org.endera"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
     mavenCentral()
@@ -16,7 +19,6 @@ repositories {
     maven("https://nexus.scarsz.me/content/groups/public/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://jitpack.io")
-    maven("https://nexus.scarsz.me/content/groups/public/")
 }
 
 dependencies {
@@ -24,11 +26,11 @@ dependencies {
     compileOnly("com.discordsrv:discordsrv:1.29.0")
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("net.kyori:adventure-text-minimessage:4.16.0")
-    compileOnly("com.discordsrv:discordsrv:1.28.0")
+    compileOnly("com.discordsrv:discordsrv:1.29.0")
 
     // Local Lib
 //    implementation("org.endera.enderalib:enderalib:1.0-SNAPSHOT")
-    implementation("com.github.Turbovadim:EnderaLib:1.3.0")
+    implementation("com.github.Turbovadim:EnderaLib:1.4.2")
 }
 
 tasks.jar {
@@ -51,7 +53,10 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(17)
+    compilerOptions {
+        apiVersion.set(KotlinVersion.KOTLIN_2_1)
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
 }
 
 tasks.withType<JavaCompile> {

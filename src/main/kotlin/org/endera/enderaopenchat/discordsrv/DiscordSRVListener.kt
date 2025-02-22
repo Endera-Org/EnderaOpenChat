@@ -1,4 +1,4 @@
-package discordsrv
+package org.endera.enderaopenchat.discordsrv
 
 import JDAListener
 import github.scarsz.discordsrv.api.Subscribe

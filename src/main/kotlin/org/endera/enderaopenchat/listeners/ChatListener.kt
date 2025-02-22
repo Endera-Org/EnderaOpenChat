@@ -10,9 +10,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.endera.enderalib.adventure.componentToString
 import org.endera.enderalib.adventure.stringToComponent
-import org.endera.enderalib.isFolia
 import org.endera.enderalib.utils.async.BukkitRegionDispatcher
-import org.endera.enderaopenchat.bukkitDispatcher
 import org.endera.enderaopenchat.config.config
 import org.endera.enderaopenchat.plugin
 import org.endera.enderaopenchat.utils.cparse
@@ -49,14 +47,8 @@ class ChatListener : Listener {
             }
 
             // LOCAL CHAT HERE
-            val nearbyPlayers = if(isFolia) {
-                withContext(bukkitRegionDispatcher) {
-                    player.location.getNearbyPlayers(config.localChat.range.toDouble())
-                }
-            } else {
-                withContext(bukkitDispatcher) {
-                    player.location.getNearbyPlayers(config.localChat.range.toDouble())
-                }
+            val nearbyPlayers = withContext(bukkitRegionDispatcher) {
+                player.location.getNearbyPlayers(config.localChat.range.toDouble())
             }
 
             if (config.messages.localnoone.isNotEmpty() && nearbyPlayers.size == 1) {

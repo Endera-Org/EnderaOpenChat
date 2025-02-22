@@ -1,19 +1,19 @@
 package org.endera.enderaopenchat
 
-import discordsrv.DiscordSRVListener
 import github.scarsz.discordsrv.DiscordSRV
 import org.bukkit.Bukkit
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
+import org.endera.enderalib.bstats.MetricsLite
 import org.endera.enderalib.utils.async.BukkitDispatcher
+import org.endera.enderalib.utils.configuration.ConfigurationManager
 import org.endera.enderalib.utils.configuration.PluginException
-import org.endera.enderalib.utils.configuration.configLoadCreationHandler
-import org.endera.enderaopenchat.bstats.MetricsLite
 import org.endera.enderaopenchat.commands.MsgCommand
 import org.endera.enderaopenchat.commands.ReloadCommand
 import org.endera.enderaopenchat.config.ConfigScheme
 import org.endera.enderaopenchat.config.configFile
 import org.endera.enderaopenchat.config.defaultConfig
+import org.endera.enderaopenchat.discordsrv.DiscordSRVListener
 import org.endera.enderaopenchat.listeners.ChatListener
 import org.endera.enderaopenchat.listeners.LeaveJoinDeathListener
 import java.io.File
@@ -23,6 +23,7 @@ lateinit var rlogger: Logger
 lateinit var plugin: JavaPlugin
 lateinit var bukkitDispatcher: BukkitDispatcher
 
+@Suppress("unused")
 class EnderaOpenChat : JavaPlugin() {
 
     val discordsrvListener = DiscordSRVListener(this)
@@ -35,15 +36,17 @@ class EnderaOpenChat : JavaPlugin() {
         configFile = File("${dataFolder}/config.yml")
         rlogger = logger
 
+        val configManager = ConfigurationManager(
+            configFile = configFile,
+            dataFolder = dataFolder,
+            defaultConfig = defaultConfig,
+            logger = logger,
+            serializer = ConfigScheme.serializer(),
+            clazz = ConfigScheme::class
+        )
+
         try {
-            val loadedConfig = configLoadCreationHandler(
-                configFile = configFile,
-                dataFolder = dataFolder,
-                defaultConfig = defaultConfig,
-                logger = logger,
-                serializer = ConfigScheme.serializer()
-            )
-            org.endera.enderaopenchat.config.config = loadedConfig
+            org.endera.enderaopenchat.config.config = configManager.loadOrCreateConfig()
         } catch (e: PluginException) {
             logger.severe("Critical error loading configuration: ${e.message}")
             server.pluginManager.disablePlugin(this)

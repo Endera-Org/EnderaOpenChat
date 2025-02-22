@@ -4,8 +4,8 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.endera.enderalib.utils.checkPermission
+import org.endera.enderalib.utils.configuration.ConfigurationManager
 import org.endera.enderalib.utils.configuration.PluginException
-import org.endera.enderalib.utils.configuration.configLoadCreationHandler
 import org.endera.enderaopenchat.config.ConfigScheme
 import org.endera.enderaopenchat.config.config
 import org.endera.enderaopenchat.config.configFile
@@ -20,14 +20,17 @@ class ReloadCommand : CommandExecutor {
         if (args.size != 1) return true
 
         sender.checkPermission("echat.reload") {
+            val configManager = ConfigurationManager(
+                configFile = configFile,
+                dataFolder = plugin.dataFolder,
+                defaultConfig = defaultConfig,
+                logger = rlogger,
+                serializer = ConfigScheme.serializer(),
+                clazz = ConfigScheme::class
+            )
+
             try {
-                 config = configLoadCreationHandler(
-                    configFile = configFile,
-                    dataFolder = plugin.dataFolder,
-                    defaultConfig = defaultConfig,
-                    logger = rlogger,
-                    serializer = ConfigScheme.serializer()
-                )
+                 config = configManager.loadOrCreateConfig()
                 sender.sendMessage(config.messages.reload.cparse())
             } catch (e: PluginException) {
                 rlogger.severe("Critical error loading configuration: ${e.message}")

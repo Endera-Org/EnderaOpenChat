@@ -1,5 +1,5 @@
 name: EnderaOpenChat
-version: 1.0.2
+version: 1.0.3
 main: org.endera.enderaopenchat.EnderaOpenChat
 description: Simple and stable chat plugin
 authors: [TurboVadim, Sculmix]
