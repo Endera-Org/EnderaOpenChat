@@ -1,6 +1,5 @@
 package org.endera.enderaopenchat.discordsrv
 
-import JDAListener
 import github.scarsz.discordsrv.api.Subscribe
 import github.scarsz.discordsrv.api.events.DiscordReadyEvent
 import github.scarsz.discordsrv.api.events.GameChatMessagePostProcessEvent

@@ -33,19 +33,11 @@ dependencies {
     implementation("com.github.Turbovadim:EnderaLib:1.4.2")
 }
 
-tasks.jar {
-    dependsOn(generatePluginYml)
-}
-
 tasks.processResources {
-    dependsOn(generatePluginYml)
-}
-
-val generatePluginYml = tasks.create("generatePluginYml", Copy::class.java) {
-    from("/src/main/configs/plugin.yml")
-    into("/src/main/resources")
-    expand(mapOf("projectVersion" to project.version))
-    outputs.upToDateWhen { false }
+    inputs.property("version", rootProject.version)
+    filesMatching("**plugin.yml") {
+        expand("version" to rootProject.version)
+    }
 }
 
 tasks.test {
