@@ -6,10 +6,12 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.endera.enderalib.adventure.stringToComponent
 import org.endera.enderalib.utils.checkPermission
-import org.endera.enderaopenchat.config.config
+import org.endera.enderaopenchat.EnderaOpenChat
 import org.endera.enderaopenchat.utils.cparse
 
 class MsgCommand : CommandExecutor {
+    val config = EnderaOpenChat.Companion.config
+
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
 
         sender.checkPermission("echat.msg") {

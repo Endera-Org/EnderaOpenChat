@@ -5,7 +5,7 @@ import github.scarsz.discordsrv.api.events.DiscordReadyEvent
 import github.scarsz.discordsrv.api.events.GameChatMessagePostProcessEvent
 import github.scarsz.discordsrv.util.DiscordUtil
 import org.bukkit.plugin.Plugin
-import org.endera.enderaopenchat.config.config
+import org.endera.enderaopenchat.EnderaOpenChat
 
 class DiscordSRVListener(private val plugin: Plugin) {
 
@@ -18,15 +18,10 @@ class DiscordSRVListener(private val plugin: Plugin) {
     @Subscribe
     fun gameChatMessagePostProcessEvent(event: GameChatMessagePostProcessEvent) {
         val processedMessage = event.processedMessage
-        val startsWithPrefix = processedMessage.startsWith(config.globalChat.prefix)
+        val sendToDiscordChannels = EnderaOpenChat.config.channels.filter { it.sendToDiscord }
 
-        when {
-            config.discordSrv.sendMessagesFromLocalChat && !startsWithPrefix -> return
-            !config.discordSrv.sendMessagesFromLocalChat && !startsWithPrefix -> {
-                event.isCancelled = true
-                return
-            }
-            else -> event.processedMessage = processedMessage.substring(config.globalChat.prefix.length)
+        sendToDiscordChannels.forEach { channel ->
+            event.processedMessage = processedMessage.substring(channel.prefix.length)
         }
     }
 

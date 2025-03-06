@@ -8,10 +8,9 @@ api-version: '1.18'
 folia-supported: true
 depend:
   - EnderaLib
-  - PlaceholderAPI
-  - LuckPerms
 softdepend:
   - DiscordSRV
+  - PlaceholderAPI
 commands:
   enderachat:
     description: "Base command"

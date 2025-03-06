@@ -6,10 +6,12 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.endera.enderalib.adventure.stringToComponent
-import org.endera.enderaopenchat.config.config
+import org.endera.enderaopenchat.EnderaOpenChat
 import org.endera.enderaopenchat.utils.papiParse
 
 class LeaveJoinDeathListener : Listener {
+
+    val config = EnderaOpenChat.config
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {

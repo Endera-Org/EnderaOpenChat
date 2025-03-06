@@ -1,14 +1,33 @@
 package org.endera.enderaopenchat.config
 
 val defaultConfig = ConfigScheme(
-    localChat = LocalChat(
-        range = 100,
-        format = "<green>[L] <reset>%luckperms_prefix%{player}: {message}",
+    channels = listOf(
+        ChatChannel(
+            name = "local",
+            prefix = "",
+            range = 100,
+            sendToDiscord = false,
+            usePermission = false,
+            format = "<green>[L] <reset>{player}: {message}",
+        ),
+        ChatChannel(
+            name = "global",
+            prefix = "!",
+            range = -2,
+            sendToDiscord = true,
+            usePermission = false,
+            format = "<red>[G] <reset>{player}: {message}"
+
+        ),
     ),
-    globalChat = GlobalChat(
-        prefix = "!",
-        format = "<red>[G] <reset>%luckperms_prefix%{player}: {message}"
-    ),
+//    localChat = LocalChat(
+//        range = 100,
+//        format = "<green>[L] <reset>%luckperms_prefix%{player}: {message}",
+//    ),
+//    globalChat = GlobalChat(
+//        prefix = "!",
+//        format = "<red>[G] <reset>%luckperms_prefix%{player}: {message}"
+//    ),
     personalMessages = Msg(
         format = "<gray>[<dark_gray>{sender} <gray>-> <dark_gray>{target}<gray>]: <white>{message}",
         sound = "entity.player.levelup",
@@ -29,13 +48,11 @@ val defaultConfig = ConfigScheme(
             message = "<gray>[<red>☠<gray>] <white>{player} has died"
         ),
     ),
-    discordSrv = DiscordSrv(
-        sendMessagesFromLocalChat = false
-    ),
     messages = Messages(
         prefix = "<green>[EChat]<reset>",
         reload = "{prefix} Plugin configuration reloaded",
         playernotfound = "{prefix} <red>Player not found",
+        nochannelpermission = "{prefix} <red>You do not have permission to use this channel",
         localnoone = "<red>No players nearby!",
         usage = Usage(
             msg = "{prefix} <red>Command usage: /msg (player) (message)"
