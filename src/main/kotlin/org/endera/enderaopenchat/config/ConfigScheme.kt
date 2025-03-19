@@ -1,7 +1,6 @@
 package org.endera.enderaopenchat.config
 
 import kotlinx.serialization.Serializable
-import org.endera.enderalib.utils.configuration.Comment
 
 @Serializable
 data class ConfigScheme(
@@ -23,9 +22,6 @@ data class ChatChannel(
 
 @Serializable
 data class CustomLeaveJoinDeath(
-    @Comment("""
-        joinMessage
-    """)
     val joinMessage: LeaveJoinDeathMessage,
     val leaveMessage: LeaveJoinDeathMessage,
     val deathMessage: LeaveJoinDeathMessage,

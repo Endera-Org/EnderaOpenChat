@@ -2,14 +2,15 @@ package org.endera.enderaopenchat
 
 import github.scarsz.discordsrv.DiscordSRV
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import org.bukkit.Bukkit
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import org.endera.enderalib.bstats.MetricsLite
+import org.endera.enderalib.utils.PluginException
 import org.endera.enderalib.utils.async.BukkitDispatcher
 import org.endera.enderalib.utils.async.ioDispatcher
 import org.endera.enderalib.utils.configuration.ConfigurationManager
-import org.endera.enderalib.utils.configuration.PluginException
 import org.endera.enderaopenchat.commands.MsgCommand
 import org.endera.enderaopenchat.commands.ReloadCommand
 import org.endera.enderaopenchat.config.ConfigScheme
@@ -20,7 +21,6 @@ import org.endera.enderaopenchat.listeners.LeaveJoinDeathListener
 import java.io.File
 
 
-@Suppress("unused")
 class EnderaOpenChat : JavaPlugin() {
 
     companion object {
@@ -28,6 +28,7 @@ class EnderaOpenChat : JavaPlugin() {
         lateinit var bukkitDispatcher: BukkitDispatcher
         lateinit var configFile: File
         lateinit var config: ConfigScheme
+        lateinit var configurationManager: ConfigurationManager<ConfigScheme>
         lateinit var integrations: Map<Integrations, Plugin?>
         val scope = CoroutineScope(ioDispatcher)
     }
@@ -40,7 +41,9 @@ class EnderaOpenChat : JavaPlugin() {
         bukkitDispatcher = BukkitDispatcher(this)
         configFile = File("${dataFolder}/config.yml")
 
-        val configManager = ConfigurationManager(
+        MetricsLite(this, 24253)
+
+        configurationManager = ConfigurationManager(
             configFile = configFile,
             dataFolder = dataFolder,
             defaultConfig = defaultConfig,
@@ -50,16 +53,14 @@ class EnderaOpenChat : JavaPlugin() {
         )
 
         try {
-            Companion.config = configManager.loadOrCreateConfig()
+            Companion.config = configurationManager.loadOrCreateConfig()
         } catch (e: PluginException) {
             logger.severe("Critical error loading configuration: ${e.message}")
             server.pluginManager.disablePlugin(this)
         }
 
-        val metrics = MetricsLite(this, 24253)
-
         integrations = mapOf<Integrations, Plugin?>(
-            Integrations.PLACEHOLDERAPI to Bukkit.getPluginManager().getPlugin("DiscordSRV"),
+            Integrations.PLACEHOLDERAPI to Bukkit.getPluginManager().getPlugin("PlaceholderAPI"),
             Integrations.DISCORD_SRV to Bukkit.getPluginManager().getPlugin("DiscordSRV")
         )
 
@@ -82,6 +83,7 @@ class EnderaOpenChat : JavaPlugin() {
     }
 
     override fun onDisable() {
+        scope.cancel()
         if (integrations[Integrations.DISCORD_SRV] != null) {
             DiscordSRV.api.unsubscribe(discordsrvListener)
         }

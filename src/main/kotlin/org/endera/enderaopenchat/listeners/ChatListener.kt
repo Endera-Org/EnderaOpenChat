@@ -1,8 +1,7 @@
 package org.endera.enderaopenchat.listeners
 
 import io.papermc.paper.event.player.AsyncChatEvent
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.event.EventHandler
@@ -14,36 +13,35 @@ import org.endera.enderalib.utils.async.BukkitRegionDispatcher
 import org.endera.enderaopenchat.EnderaOpenChat
 import org.endera.enderaopenchat.config.ChatChannel
 import org.endera.enderaopenchat.utils.cparse
+import org.endera.enderaopenchat.utils.nearbyPlayers
 import org.endera.enderaopenchat.utils.papiParse
 
-
+@Suppress("unused")
 class ChatListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     fun onPlayerChatSent(event: AsyncChatEvent) {
         val config = EnderaOpenChat.config
-        val (nonPrefixedChannels, prefixedChannels) = EnderaOpenChat.config.channels.partition { it.prefix.isEmpty() }
+        val (nonPrefixedChannels, prefixedChannels) = config.channels.partition { it.prefix.isEmpty() }
         val stringMessage = event.message().componentToString()
         val containsPrefix = prefixedChannels.any { stringMessage.startsWith(it.prefix) }
 
-        runBlocking {
-            if (containsPrefix) {
-                prefixedChannels.forEach { channel ->
-                    if (!stringMessage.startsWith(channel.prefix)) return@runBlocking
-                    val stringMessage2 = stringMessage.substring(channel.prefix.length)
-                    processMessage(event, channel, stringMessage2)
-                }
-            } else {
-                nonPrefixedChannels.forEach { channel ->
-                    if (!stringMessage.startsWith(channel.prefix)) return@runBlocking
-                    processMessage(event, channel, stringMessage)
-                }
+        if (containsPrefix) {
+            prefixedChannels.forEach { channel ->
+                if (!stringMessage.startsWith(channel.prefix)) return
+                val stringMessage2 = stringMessage.substring(channel.prefix.length)
+                processMessage(event, channel, stringMessage2)
+            }
+        } else {
+            nonPrefixedChannels.forEach { channel ->
+                if (!stringMessage.startsWith(channel.prefix)) return
+                processMessage(event, channel, stringMessage)
             }
         }
 
     }
 
-    suspend fun processMessage(
+    fun processMessage(
         event: AsyncChatEvent,
         channel: ChatChannel,
         stringMessage: String,
@@ -58,39 +56,32 @@ class ChatListener : Listener {
         }
 
         val nearbyPlayers = when (channel.range) {
-            -2 -> {
-                Bukkit.getOnlinePlayers()
-            }
-            -1 -> {
-                withContext(getRegionDispatcher(event.player.location)) {
-                    player.world.players
-                }
-            }
+            -2 -> Bukkit.getOnlinePlayers().toList()
+            -1 -> player.world.players
             else -> {
                 if (channel.range > 0) {
-                    withContext(getRegionDispatcher(event.player.location)) {
-                        player.location.getNearbyPlayers(channel.range.toDouble())
-                    }
-                } else listOf()
+                    nearbyPlayers(player, Bukkit.getOnlinePlayers().toList(), channel.range)
+                } else emptyList()
             }
         }
 
         val viewers = if (channel.usePermission) {
-                nearbyPlayers.filter { it.hasPermission("echat.${channel.name}.view") }
-            } else {
-                nearbyPlayers
-            }
+            nearbyPlayers.filter { it.hasPermission("echat.${channel.name}.view") }
+        } else {
+            nearbyPlayers
+        }
 
-
-        if (viewers.isEmpty()) {
-            withContext(getRegionDispatcher(player.location)) {
+        if (viewers.none { it != event.player }) {
+            EnderaOpenChat.scope.launch(getRegionDispatcher(player.location)) {
                 player.sendActionBar(config.messages.localnoone.cparse())
             }
         }
 
-        event.viewers().clear()
-        event.viewers().addAll(viewers)
-        event.viewers().add(Bukkit.getConsoleSender())
+        val eViewers = event.viewers()
+
+        eViewers.clear()
+        eViewers.addAll(viewers)
+        eViewers.add(Bukkit.getConsoleSender())
 
         event.renderer { _, _, message, _ ->
             message

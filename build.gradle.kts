@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "org.endera"
-version = "1.1.0"
+version = "1.1.2"
 
 repositories {
     mavenCentral()
@@ -30,7 +30,7 @@ dependencies {
 
     // Local Lib
 //    implementation("org.endera.enderalib:enderalib:1.0-SNAPSHOT")
-    implementation("com.github.Turbovadim:EnderaLib:1.4.2")
+    implementation("com.github.Turbovadim:EnderaLib:1.4.5")
 }
 
 tasks.processResources {
