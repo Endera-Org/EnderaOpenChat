@@ -19,17 +19,19 @@ class DiscordSRVListener(private val plugin: Plugin) {
     @Subscribe
     fun gameChatMessagePostProcessEvent(event: GameChatMessagePostProcessEvent) {
         val processedMessage = event.processedMessage
-        val channel = EnderaOpenChat.config.channels.find { processedMessage.startsWith(it.prefix) }
-        if (channel == null) {
+        val matchingChannels = EnderaOpenChat.config.channels
+            .filter { processedMessage.startsWith(it.prefix) && it.sendToDiscord }
+        
+        if (matchingChannels.isEmpty()) {
             event.isCancelled = true
             return
         }
-        if (!channel.sendToDiscord) {
-            event.isCancelled = true
-            return
-        }
-        // Удаляем префикс, если сообщение должно быть отправлено
-        event.processedMessage = processedMessage.substring(channel.prefix.length)
+        
+        // Находим канал с самым длинным префиксом для обработки сообщения
+        val primaryChannel = matchingChannels.maxByOrNull { it.prefix.length }!!
+        
+        // Удаляем префикс основного канала
+        event.processedMessage = processedMessage.substring(primaryChannel.prefix.length)
     }
 
 //    @Subscribe(priority = ListenerPriority.MONITOR)
