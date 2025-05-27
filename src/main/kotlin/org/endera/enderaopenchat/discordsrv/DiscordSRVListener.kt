@@ -7,6 +7,7 @@ import github.scarsz.discordsrv.util.DiscordUtil
 import org.bukkit.plugin.Plugin
 import org.endera.enderaopenchat.EnderaOpenChat
 
+@Suppress("unused")
 class DiscordSRVListener(private val plugin: Plugin) {
 
     @Subscribe
@@ -18,11 +19,17 @@ class DiscordSRVListener(private val plugin: Plugin) {
     @Subscribe
     fun gameChatMessagePostProcessEvent(event: GameChatMessagePostProcessEvent) {
         val processedMessage = event.processedMessage
-        val sendToDiscordChannels = EnderaOpenChat.config.channels.filter { it.sendToDiscord }
-
-        sendToDiscordChannels.forEach { channel ->
-            event.processedMessage = processedMessage.substring(channel.prefix.length)
+        val channel = EnderaOpenChat.config.channels.find { processedMessage.startsWith(it.prefix) }
+        if (channel == null) {
+            event.isCancelled = true
+            return
         }
+        if (!channel.sendToDiscord) {
+            event.isCancelled = true
+            return
+        }
+        // Удаляем префикс, если сообщение должно быть отправлено
+        event.processedMessage = processedMessage.substring(channel.prefix.length)
     }
 
 //    @Subscribe(priority = ListenerPriority.MONITOR)

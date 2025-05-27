@@ -30,7 +30,7 @@ dependencies {
 
     // Local Lib
 //    implementation("org.endera.enderalib:enderalib:1.0-SNAPSHOT")
-    implementation("com.github.Turbovadim:EnderaLib:1.4.5")
+    implementation("com.github.Endera-Org:EnderaLib:1.4.5")
 }
 
 tasks.processResources {

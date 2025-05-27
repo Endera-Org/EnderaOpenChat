@@ -28,14 +28,17 @@ class ChatListener : Listener {
 
         if (containsPrefix) {
             prefixedChannels.forEach { channel ->
-                if (!stringMessage.startsWith(channel.prefix)) return
-                val stringMessage2 = stringMessage.substring(channel.prefix.length)
-                processMessage(event, channel, stringMessage2)
+                if (stringMessage.startsWith(channel.prefix)) {
+                    val stringMessage2 = stringMessage.substring(channel.prefix.length)
+                    processMessage(event, channel, stringMessage2)
+                }
+
             }
         } else {
             nonPrefixedChannels.forEach { channel ->
-                if (!stringMessage.startsWith(channel.prefix)) return
-                processMessage(event, channel, stringMessage)
+                if (stringMessage.startsWith(channel.prefix)) {
+                    processMessage(event, channel, stringMessage)
+                }
             }
         }
 
@@ -49,10 +52,12 @@ class ChatListener : Listener {
         val config = EnderaOpenChat.config
         val player = event.player
 
-        if (!player.hasPermission("echat.${channel.name}.send") && channel.usePermission) {
-            player.sendMessage(config.messages.nochannelpermission.cparse())
-            event.isCancelled = true
-            return
+        if (channel.usePermission) {
+            if (!player.hasPermission("echat.${channel.name}.send")) {
+                player.sendMessage(config.messages.nochannelpermission.cparse())
+                event.isCancelled = true
+                return
+            }
         }
 
         val nearbyPlayers = when (channel.range) {
