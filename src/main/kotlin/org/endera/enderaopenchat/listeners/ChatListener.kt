@@ -26,7 +26,7 @@ class ChatListener : Listener {
         val stringMessage = event.message().componentToString()
         val containsPrefix = prefixedChannels.any { stringMessage.startsWith(it.prefix) }
 
-        if (containsPrefix && stringMessage.toList().size>1) {
+        if (containsPrefix && stringMessage.length>1) {
             prefixedChannels.forEach { channel ->
                 if (stringMessage.startsWith(channel.prefix)) {
                     val stringMessage2 = stringMessage.substring(channel.prefix.length)
