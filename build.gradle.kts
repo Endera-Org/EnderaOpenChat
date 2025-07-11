@@ -2,12 +2,12 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
-    kotlin("jvm") version "2.1.10"
-    kotlin("plugin.serialization") version "2.1.10" apply true
+    kotlin("jvm") version "2.2.0"
+    kotlin("plugin.serialization") version "2.2.0" apply true
 }
 
 group = "org.endera"
-version = "1.1.2"
+version = "1.1.3"
 
 repositories {
     mavenCentral()
@@ -46,7 +46,7 @@ tasks.test {
 
 kotlin {
     compilerOptions {
-        apiVersion.set(KotlinVersion.KOTLIN_2_1)
+        apiVersion.set(KotlinVersion.KOTLIN_2_2)
         jvmTarget.set(JvmTarget.JVM_17)
     }
 }
