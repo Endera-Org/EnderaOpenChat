@@ -24,24 +24,21 @@ class ChatListener : Listener {
         val config = EnderaOpenChat.config
         val (nonPrefixedChannels, prefixedChannels) = config.channels.partition { it.prefix.isEmpty() }
         val stringMessage = event.message().componentToString()
-        val containsPrefix = prefixedChannels.any { stringMessage.startsWith(it.prefix) }
 
-        if (containsPrefix && stringMessage.length>1) {
-            prefixedChannels.forEach { channel ->
-                if (stringMessage.startsWith(channel.prefix)) {
-                    val stringMessage2 = stringMessage.substring(channel.prefix.length)
-                    processMessage(event, channel, stringMessage2)
-                }
-
-            }
-        } else {
-            nonPrefixedChannels.forEach { channel ->
-                if (stringMessage.startsWith(channel.prefix)) {
-                    processMessage(event, channel, stringMessage)
-                }
-            }
+        val matchedPrefixedChannel = prefixedChannels.firstOrNull { prefixChannel ->
+            stringMessage.startsWith(prefixChannel.prefix)
         }
 
+        if (matchedPrefixedChannel != null) {
+            val remainder = stringMessage.substring(matchedPrefixedChannel.prefix.length)
+            if (remainder.isNotEmpty()) {
+                processMessage(event, matchedPrefixedChannel, remainder)
+            }
+            return
+        }
+
+        val defaultChannel = nonPrefixedChannels.firstOrNull() ?: return
+        processMessage(event, defaultChannel, stringMessage)
     }
 
     fun processMessage(
@@ -60,20 +57,20 @@ class ChatListener : Listener {
             }
         }
 
-        val nearbyPlayers = when (channel.range) {
+        val candidatePlayers = when (channel.range) {
             -2 -> Bukkit.getOnlinePlayers().toList()
             -1 -> player.world.players
             else -> {
                 if (channel.range > 0) {
-                    nearbyPlayers(player, Bukkit.getOnlinePlayers().toList(), channel.range)
+                    nearbyPlayers(player, player.world.players, channel.range)
                 } else emptyList()
             }
         }
 
         val viewers = if (channel.usePermission) {
-            nearbyPlayers.filter { it.hasPermission("echat.${channel.name}.view") }
+            candidatePlayers.filter { it.hasPermission("echat.${channel.name}.view") }
         } else {
-            nearbyPlayers
+            candidatePlayers
         }
 
         if (viewers.none { it != event.player }) {
