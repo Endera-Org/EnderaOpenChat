@@ -20,14 +20,6 @@ val defaultConfig = ConfigScheme(
 
         ),
     ),
-//    localChat = LocalChat(
-//        range = 100,
-//        format = "<green>[L] <reset>%luckperms_prefix%{player}: {message}",
-//    ),
-//    globalChat = GlobalChat(
-//        prefix = "!",
-//        format = "<red>[G] <reset>%luckperms_prefix%{player}: {message}"
-//    ),
     personalMessages = Msg(
         format = "<gray>[<dark_gray>{sender} <gray>-> <dark_gray>{target}<gray>]: <white>{message}",
         sound = "entity.player.levelup",

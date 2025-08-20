@@ -27,10 +27,8 @@ class DiscordSRVListener(private val plugin: Plugin) {
             return
         }
         
-        // Находим канал с самым длинным префиксом для обработки сообщения
         val primaryChannel = matchingChannels.maxByOrNull { it.prefix.length }!!
         
-        // Удаляем префикс основного канала
         event.processedMessage = processedMessage.substring(primaryChannel.prefix.length)
     }
 
