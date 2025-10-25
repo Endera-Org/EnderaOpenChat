@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "org.endera"
-version = "1.1.3"
+version = "1.1.4"
 
 repositories {
     mavenCentral()
@@ -31,6 +31,7 @@ dependencies {
     // Local Lib
 //    implementation("org.endera.enderalib:enderalib:1.0-SNAPSHOT")
     implementation("com.github.Endera-Org:EnderaLib:1.4.5")
+    implementation("com.github.Zrips:CMI-API:9.7.14.3")
 }
 
 tasks.processResources {

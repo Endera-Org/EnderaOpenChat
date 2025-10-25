@@ -6,9 +6,20 @@ import org.endera.enderaopenchat.EnderaOpenChat
 import org.endera.enderaopenchat.Integrations
 
 fun String.papiParse(player: Player): String {
-    return if (EnderaOpenChat.integrations[Integrations.PLACEHOLDERAPI] != null) {
-        PlaceholderAPI.setPlaceholders(player, this)
-    } else {
-        this
+    if (EnderaOpenChat.integrations[Integrations.PLACEHOLDERAPI] == null) {
+        return this
     }
+
+    var text = this
+    var previousText: String
+    val maxRecursionDepth = 5
+    var currentDepth = 0
+
+    do {
+        previousText = text
+        text = PlaceholderAPI.setPlaceholders(player, text)
+        currentDepth++
+    } while (previousText != text && currentDepth < maxRecursionDepth)
+
+    return text
 }

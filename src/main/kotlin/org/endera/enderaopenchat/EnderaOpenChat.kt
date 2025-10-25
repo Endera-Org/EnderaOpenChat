@@ -61,7 +61,8 @@ class EnderaOpenChat : JavaPlugin() {
 
         integrations = mapOf(
             Integrations.PLACEHOLDERAPI to Bukkit.getPluginManager().getPlugin("PlaceholderAPI"),
-            Integrations.DISCORD_SRV to Bukkit.getPluginManager().getPlugin("DiscordSRV")
+            Integrations.DISCORD_SRV to Bukkit.getPluginManager().getPlugin("DiscordSRV"),
+            Integrations.CMI to Bukkit.getPluginManager().getPlugin("CMI")
         )
 
         integrations.forEach { integration, plugin ->
