@@ -7,12 +7,13 @@ import org.endera.enderaopenchat.integrations.CMIVanishHook
 
 fun nearbyPlayers(centerPlayer: Player, otherPlayers: Collection<Player>, range: Int): List<Player> {
     val playerLocation = centerPlayer.location
-    val rangeSquared = range * range
+    val rangeSquared = range.toDouble() * range.toDouble()
     val isCmi = EnderaOpenChat.integrations[Integrations.CMI] != null
 
     return otherPlayers.filter { other ->
-
-        val isVanished = if (isCmi) {
+        val isVanished = if (other.uniqueId == centerPlayer.uniqueId) {
+            false
+        } else if (isCmi) {
             CMIVanishHook.isPlayerVanished(other)
         } else {
             other.hasMetadata("vanished") && other.getMetadata("vanished").any { it.asBoolean() }
