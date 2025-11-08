@@ -13,6 +13,7 @@ import org.endera.enderalib.utils.async.BukkitRegionDispatcher
 import org.endera.enderaopenchat.EnderaOpenChat
 import org.endera.enderaopenchat.config.ChatChannel
 import org.endera.enderaopenchat.utils.cparse
+import org.endera.enderaopenchat.utils.isPlayerVanished
 import org.endera.enderaopenchat.utils.nearbyPlayers
 import org.endera.enderaopenchat.utils.papiParse
 
@@ -49,13 +50,13 @@ class ChatListener : Listener {
         val config = EnderaOpenChat.config
         val player = event.player
 
-        if (channel.usePermission) {
-            if (!player.hasPermission("echat.${channel.name}.send")) {
-                player.sendMessage(config.messages.nochannelpermission.cparse())
-                event.isCancelled = true
-                return
-            }
+        if (channel.usePermission && !player.hasPermission("echat.${channel.name}.send")) {
+            player.sendMessage(config.messages.nochannelpermission.cparse())
+            event.isCancelled = true
+            return
         }
+
+        val senderIsVanished = isPlayerVanished(player)
 
         val candidatePlayers = when (channel.range) {
             -2 -> Bukkit.getOnlinePlayers().toList()
@@ -67,15 +68,32 @@ class ChatListener : Listener {
             }
         }
 
-        val viewers = if (channel.usePermission) {
-            candidatePlayers.filter { it.hasPermission("echat.${channel.name}.view") }
-        } else {
-            candidatePlayers
+        val viewers = candidatePlayers.filter { potentialViewer ->
+            if (potentialViewer == player) return@filter true
+
+            if (channel.usePermission && !potentialViewer.hasPermission("echat.${channel.name}.view")) {
+                return@filter false
+            }
+
+            val viewerIsVanished = isPlayerVanished(potentialViewer)
+
+            viewerIsVanished || !senderIsVanished
+        }
+
+        if (!senderIsVanished) {
+            val visibleViewers = viewers.filter { v -> !isPlayerVanished(v) }
+            if (visibleViewers.size <= 1) {
+                EnderaOpenChat.scope.launch(getRegionDispatcher(player.location)) {
+                    player.sendActionBar(config.messages.localnoone.cparse())
+                }
+            }
         }
 
         if (viewers.none { it != event.player }) {
-            EnderaOpenChat.scope.launch(getRegionDispatcher(player.location)) {
-                player.sendActionBar(config.messages.localnoone.cparse())
+            if (!senderIsVanished) {
+                EnderaOpenChat.scope.launch(getRegionDispatcher(player.location)) {
+                    player.sendActionBar(config.messages.localnoone.cparse())
+                }
             }
         }
 
