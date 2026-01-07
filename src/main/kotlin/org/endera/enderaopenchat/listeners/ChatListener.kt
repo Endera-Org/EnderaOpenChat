@@ -32,10 +32,10 @@ class ChatListener : Listener {
 
         if (matchedPrefixedChannel != null) {
             val remainder = stringMessage.substring(matchedPrefixedChannel.prefix.length)
-            if (remainder.isNotEmpty()) {
+            if (remainder.isNotBlank()) {
                 processMessage(event, matchedPrefixedChannel, remainder)
+                return
             }
-            return
         }
 
         val defaultChannel = nonPrefixedChannels.firstOrNull() ?: return
