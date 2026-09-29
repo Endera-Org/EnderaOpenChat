@@ -1,15 +1,11 @@
 package org.endera.enderaopenchat
 
 import github.scarsz.discordsrv.DiscordSRV
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 import org.bukkit.Bukkit
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import org.endera.enderalib.bstats.MetricsLite
 import org.endera.enderalib.utils.PluginException
-import org.endera.enderalib.utils.async.BukkitDispatcher
-import org.endera.enderalib.utils.async.ioDispatcher
 import org.endera.enderalib.utils.configuration.ConfigurationManager
 import org.endera.enderaopenchat.commands.MsgCommand
 import org.endera.enderaopenchat.commands.ReloadCommand
@@ -25,12 +21,10 @@ class EnderaOpenChat : JavaPlugin() {
 
     companion object {
         lateinit var instance : EnderaOpenChat
-        lateinit var bukkitDispatcher: BukkitDispatcher
         lateinit var configFile: File
         lateinit var config: ConfigScheme
         lateinit var configurationManager: ConfigurationManager<ConfigScheme>
-        lateinit var integrations: Map<Integrations, Plugin?>
-        val scope = CoroutineScope(ioDispatcher)
+        var integrations: Map<Integrations, Plugin?> = emptyMap()
     }
 
     val discordsrvListener = DiscordSRVListener(this)
@@ -38,7 +32,6 @@ class EnderaOpenChat : JavaPlugin() {
 
     override fun onEnable() {
         instance = this
-        bukkitDispatcher = BukkitDispatcher(this)
         configFile = File("${dataFolder}/config.yml")
 
         MetricsLite(this, 24253)
@@ -57,6 +50,7 @@ class EnderaOpenChat : JavaPlugin() {
         } catch (e: PluginException) {
             logger.severe("Critical error loading configuration: ${e.message}")
             server.pluginManager.disablePlugin(this)
+            return
         }
 
         integrations = mapOf(
@@ -84,7 +78,6 @@ class EnderaOpenChat : JavaPlugin() {
     }
 
     override fun onDisable() {
-        scope.cancel()
         if (integrations[Integrations.DISCORD_SRV] != null) {
             DiscordSRV.api.unsubscribe(discordsrvListener)
         }

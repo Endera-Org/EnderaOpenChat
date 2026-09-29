@@ -10,7 +10,7 @@ import org.endera.enderaopenchat.EnderaOpenChat
 import org.endera.enderaopenchat.utils.cparse
 
 class MsgCommand : CommandExecutor {
-    val config = EnderaOpenChat.config
+    private val config get() = EnderaOpenChat.config
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
 

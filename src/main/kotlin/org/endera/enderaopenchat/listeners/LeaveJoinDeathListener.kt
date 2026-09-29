@@ -11,7 +11,7 @@ import org.endera.enderaopenchat.utils.papiParse
 
 class LeaveJoinDeathListener : Listener {
 
-    val config = EnderaOpenChat.config
+    private val config get() = EnderaOpenChat.config
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {

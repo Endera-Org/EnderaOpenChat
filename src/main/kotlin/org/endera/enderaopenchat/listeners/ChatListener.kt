@@ -1,15 +1,13 @@
 package org.endera.enderaopenchat.listeners
 
 import io.papermc.paper.event.player.AsyncChatEvent
-import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
-import org.bukkit.Location
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.endera.enderalib.adventure.componentToString
 import org.endera.enderalib.adventure.stringToComponent
-import org.endera.enderalib.utils.async.BukkitRegionDispatcher
+import org.endera.enderalib.utils.async.runTask
 import org.endera.enderaopenchat.EnderaOpenChat
 import org.endera.enderaopenchat.config.ChatChannel
 import org.endera.enderaopenchat.utils.cparse
@@ -80,20 +78,9 @@ class ChatListener : Listener {
             viewerIsVanished || !senderIsVanished
         }
 
-        if (!senderIsVanished) {
-            val visibleViewers = viewers.filter { v -> !isPlayerVanished(v) }
-            if (visibleViewers.size <= 1) {
-                EnderaOpenChat.scope.launch(getRegionDispatcher(player.location)) {
-                    player.sendActionBar(config.messages.localnoone.cparse())
-                }
-            }
-        }
-
-        if (viewers.none { it != event.player }) {
-            if (!senderIsVanished) {
-                EnderaOpenChat.scope.launch(getRegionDispatcher(player.location)) {
-                    player.sendActionBar(config.messages.localnoone.cparse())
-                }
+        if (!senderIsVanished && viewers.count { !isPlayerVanished(it) } <= 1) {
+            player.runTask(EnderaOpenChat.instance) {
+                player.sendActionBar(config.messages.localnoone.cparse())
             }
         }
 
@@ -115,9 +102,4 @@ class ChatListener : Listener {
                 .stringToComponent()
         )
     }
-
-    fun getRegionDispatcher(location: Location): BukkitRegionDispatcher {
-        return BukkitRegionDispatcher(EnderaOpenChat.instance, location)
-    }
-
 }
