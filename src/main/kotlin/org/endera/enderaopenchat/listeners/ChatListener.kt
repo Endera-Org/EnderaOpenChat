@@ -9,7 +9,7 @@ import org.endera.enderalib.adventure.componentToString
 import org.endera.enderalib.adventure.stringToComponent
 import org.endera.enderalib.utils.async.runTask
 import org.endera.enderaopenchat.EnderaOpenChat
-import org.endera.enderaopenchat.config.ChatChannel
+import org.endera.enderaopenchat.config.resolveChannel
 import org.endera.enderaopenchat.utils.cparse
 import org.endera.enderaopenchat.utils.isPlayerVanished
 import org.endera.enderaopenchat.utils.nearbyPlayers
@@ -21,32 +21,8 @@ class ChatListener : Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun onPlayerChatSent(event: AsyncChatEvent) {
         val config = EnderaOpenChat.config
-        val (nonPrefixedChannels, prefixedChannels) = config.channels.partition { it.prefix.isEmpty() }
-        val stringMessage = event.message().componentToString()
-
-        val matchedPrefixedChannel = prefixedChannels.firstOrNull { prefixChannel ->
-            stringMessage.startsWith(prefixChannel.prefix)
-        }
-
-        if (matchedPrefixedChannel != null) {
-            val remainder = stringMessage.substring(matchedPrefixedChannel.prefix.length)
-            if (remainder.isNotBlank()) {
-                processMessage(event, matchedPrefixedChannel, remainder)
-                return
-            }
-        }
-
-        val defaultChannel = nonPrefixedChannels.firstOrNull() ?: return
-        processMessage(event, defaultChannel, stringMessage)
-    }
-
-    fun processMessage(
-        event: AsyncChatEvent,
-        channel: ChatChannel,
-        stringMessage: String,
-    ) {
-        val config = EnderaOpenChat.config
         val player = event.player
+        val (channel, stringMessage) = config.resolveChannel(event.message().componentToString()) ?: return
 
         if (channel.usePermission && !player.hasPermission("echat.${channel.name}.send")) {
             player.sendMessage(config.messages.nochannelpermission.cparse())
@@ -55,15 +31,13 @@ class ChatListener : Listener {
         }
 
         val senderIsVanished = isPlayerVanished(player)
+        val isRanged = channel.range > 0
 
-        val candidatePlayers = when (channel.range) {
-            -2 -> Bukkit.getOnlinePlayers().toList()
-            -1 -> player.world.players
-            else -> {
-                if (channel.range > 0) {
-                    nearbyPlayers(player, player.world.players, channel.range)
-                } else emptyList()
-            }
+        val candidatePlayers = when {
+            channel.range == -2 -> Bukkit.getOnlinePlayers()
+            channel.range == -1 -> player.world.players
+            isRanged -> nearbyPlayers(player, player.world.players, channel.range)
+            else -> listOf(player)
         }
 
         val viewers = candidatePlayers.filter { potentialViewer ->
@@ -73,12 +47,10 @@ class ChatListener : Listener {
                 return@filter false
             }
 
-            val viewerIsVanished = isPlayerVanished(potentialViewer)
-
-            viewerIsVanished || !senderIsVanished
+            !senderIsVanished || isPlayerVanished(potentialViewer)
         }
 
-        if (!senderIsVanished && viewers.count { !isPlayerVanished(it) } <= 1) {
+        if (isRanged && !senderIsVanished && viewers.none { it != player && !isPlayerVanished(it) }) {
             player.runTask(EnderaOpenChat.instance) {
                 player.sendActionBar(config.messages.localnoone.cparse())
             }
@@ -94,11 +66,12 @@ class ChatListener : Listener {
             message
         }
 
+        // The player's message goes in last so placeholders typed in chat are never resolved
         event.message(
             channel.format
-                .replace("{message}", stringMessage)
                 .replace("{player}", player.name)
                 .papiParse(player)
+                .replace("{message}", stringMessage)
                 .stringToComponent()
         )
     }

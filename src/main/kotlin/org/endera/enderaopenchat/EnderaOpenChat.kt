@@ -1,8 +1,6 @@
 package org.endera.enderaopenchat
 
 import github.scarsz.discordsrv.DiscordSRV
-import org.bukkit.Bukkit
-import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import org.endera.enderalib.bstats.MetricsLite
 import org.endera.enderalib.utils.PluginException
@@ -20,24 +18,20 @@ import java.io.File
 class EnderaOpenChat : JavaPlugin() {
 
     companion object {
-        lateinit var instance : EnderaOpenChat
-        lateinit var configFile: File
+        lateinit var instance: EnderaOpenChat
+        @Volatile
         lateinit var config: ConfigScheme
         lateinit var configurationManager: ConfigurationManager<ConfigScheme>
-        var integrations: Map<Integrations, Plugin?> = emptyMap()
+        var integrations: Set<Integrations> = emptySet()
     }
-
-    val discordsrvListener = DiscordSRVListener(this)
-
 
     override fun onEnable() {
         instance = this
-        configFile = File("${dataFolder}/config.yml")
 
         MetricsLite(this, 24253)
 
         configurationManager = ConfigurationManager(
-            configFile = configFile,
+            configFile = File(dataFolder, "config.yml"),
             dataFolder = dataFolder,
             defaultConfig = defaultConfig,
             logger = logger,
@@ -53,23 +47,15 @@ class EnderaOpenChat : JavaPlugin() {
             return
         }
 
-        integrations = mapOf(
-            Integrations.PLACEHOLDERAPI to Bukkit.getPluginManager().getPlugin("PlaceholderAPI"),
-            Integrations.DISCORD_SRV to Bukkit.getPluginManager().getPlugin("DiscordSRV"),
-            Integrations.CMI to Bukkit.getPluginManager().getPlugin("CMI")
-        )
+        val pm = server.pluginManager
 
-        integrations.forEach { integration, plugin ->
-            if (plugin == null) {
-                logger.warning("${integration.pluginName} is not installed, skipping initialization.")
-            }
+        integrations = Integrations.entries.filterTo(mutableSetOf()) { pm.getPlugin(it.pluginName) != null }
+        logger.info("Enabled integrations: ${integrations.joinToString { it.pluginName }.ifEmpty { "none" }}")
+
+        if (Integrations.DISCORD_SRV in integrations) {
+            DiscordSRV.api.subscribe(DiscordSRVListener)
         }
 
-        if (integrations[Integrations.DISCORD_SRV] != null) {
-            DiscordSRV.api.subscribe(discordsrvListener)
-        }
-
-        val pm = Bukkit.getPluginManager()
         pm.registerEvents(ChatListener(), this)
         pm.registerEvents(LeaveJoinDeathListener(), this)
 
@@ -78,8 +64,8 @@ class EnderaOpenChat : JavaPlugin() {
     }
 
     override fun onDisable() {
-        if (integrations[Integrations.DISCORD_SRV] != null) {
-            DiscordSRV.api.unsubscribe(discordsrvListener)
+        if (Integrations.DISCORD_SRV in integrations) {
+            DiscordSRV.api.unsubscribe(DiscordSRVListener)
         }
     }
 }

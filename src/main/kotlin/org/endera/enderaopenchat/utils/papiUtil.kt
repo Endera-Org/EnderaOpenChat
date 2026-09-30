@@ -6,7 +6,7 @@ import org.endera.enderaopenchat.EnderaOpenChat
 import org.endera.enderaopenchat.Integrations
 
 fun String.papiParse(player: Player): String {
-    if (EnderaOpenChat.integrations[Integrations.PLACEHOLDERAPI] == null) {
+    if (Integrations.PLACEHOLDERAPI !in EnderaOpenChat.integrations) {
         return this
     }
 

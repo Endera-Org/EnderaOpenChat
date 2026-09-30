@@ -11,10 +11,11 @@ depend:
 softdepend:
   - DiscordSRV
   - PlaceholderAPI
+  - CMI
 commands:
   enderachat:
     description: "Base command"
-    usage: "/enderachat <arg>"
+    usage: "/enderachat reload"
     aliases:
       - echat
   msg:
@@ -25,3 +26,10 @@ commands:
       - w
       - whisper
       - tell
+permissions:
+  echat.msg:
+    description: "Send personal messages"
+    default: true
+  echat.reload:
+    description: "Reload the plugin configuration"
+    default: op

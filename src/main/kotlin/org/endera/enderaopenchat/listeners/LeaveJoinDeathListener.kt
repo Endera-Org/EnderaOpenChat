@@ -1,5 +1,7 @@
 package org.endera.enderaopenchat.listeners
 
+import net.kyori.adventure.text.Component
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
@@ -7,55 +9,34 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.endera.enderalib.adventure.stringToComponent
 import org.endera.enderaopenchat.EnderaOpenChat
+import org.endera.enderaopenchat.config.LeaveJoinDeathMessage
 import org.endera.enderaopenchat.utils.papiParse
 
 class LeaveJoinDeathListener : Listener {
 
-    private val config get() = EnderaOpenChat.config
+    private val messages get() = EnderaOpenChat.config.customLeaveJoinDeath
+
+    private fun LeaveJoinDeathMessage.render(player: Player): Component? = message
+        .takeIf { it.isNotBlank() }
+        ?.replace("{player}", player.name)
+        ?.papiParse(player)
+        ?.stringToComponent()
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
-        if (!config.customLeaveJoinDeath.joinMessage.enabled) return
-        if (config.customLeaveJoinDeath.joinMessage.message.isBlank()) {
-            event.joinMessage(null)
-            return
-        }
-        event.joinMessage(
-            config.customLeaveJoinDeath.joinMessage.message
-                .replace("{player}", event.player.name)
-                .papiParse(event.player)
-                .stringToComponent()
-        )
-
+        val message = messages.joinMessage
+        if (message.enabled) event.joinMessage(message.render(event.player))
     }
 
     @EventHandler
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        if (!config.customLeaveJoinDeath.leaveMessage.enabled) return
-        if (config.customLeaveJoinDeath.leaveMessage.message.isBlank()) {
-            event.quitMessage(null)
-            return
-        }
-        event.quitMessage(
-            config.customLeaveJoinDeath.leaveMessage.message
-                .replace("{player}", event.player.name)
-                .papiParse(event.player)
-                .stringToComponent()
-        )
+        val message = messages.leaveMessage
+        if (message.enabled) event.quitMessage(message.render(event.player))
     }
 
     @EventHandler
     fun onPlayerDeath(event: PlayerDeathEvent) {
-        if (!config.customLeaveJoinDeath.deathMessage.enabled) return
-        if (config.customLeaveJoinDeath.deathMessage.message.isBlank()) {
-            event.deathMessage(null)
-            return
-        }
-        event.deathMessage(
-            config.customLeaveJoinDeath.deathMessage.message
-                .replace("{player}", event.player.name)
-                .papiParse(event.player)
-                .stringToComponent()
-        )
+        val message = messages.deathMessage
+        if (message.enabled) event.deathMessage(message.render(event.player))
     }
 }

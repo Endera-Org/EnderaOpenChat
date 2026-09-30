@@ -12,15 +12,18 @@ class ReloadCommand : CommandExecutor {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
 
-        if (args.size != 1) return true
-
         sender.checkPermission("echat.reload") {
+            if (args.singleOrNull() != "reload") {
+                sender.sendMessage(EnderaOpenChat.config.messages.usage.echat.cparse())
+                return@checkPermission
+            }
+
             try {
                 EnderaOpenChat.config = EnderaOpenChat.configurationManager.loadOrCreateConfig()
                 sender.sendMessage(EnderaOpenChat.config.messages.reload.cparse())
             } catch (e: PluginException) {
-                EnderaOpenChat.instance.logger.severe("Critical error loading configuration: ${e.message}")
-                EnderaOpenChat.instance.server.pluginManager.disablePlugin(EnderaOpenChat.instance)
+                EnderaOpenChat.instance.logger.severe("Failed to reload configuration, keeping the previous one: ${e.message}")
+                sender.sendMessage(EnderaOpenChat.config.messages.reloadfailed.cparse())
             }
         }
 

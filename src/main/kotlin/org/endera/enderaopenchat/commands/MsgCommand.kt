@@ -4,10 +4,13 @@ import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.bukkit.entity.Player
+import org.endera.enderalib.adventure.minimessage
 import org.endera.enderalib.adventure.stringToComponent
 import org.endera.enderalib.utils.checkPermission
 import org.endera.enderaopenchat.EnderaOpenChat
 import org.endera.enderaopenchat.utils.cparse
+import org.endera.enderaopenchat.utils.isPlayerVanished
 
 class MsgCommand : CommandExecutor {
     private val config get() = EnderaOpenChat.config
@@ -20,33 +23,29 @@ class MsgCommand : CommandExecutor {
                 return@checkPermission
             }
 
-            val targetPlayerName = args[0]
-            val message = args.drop(1).joinToString(" ")
+            val targetPlayer = Bukkit.getPlayer(args[0])
+            val hiddenFromSender = targetPlayer != null && sender is Player
+                    && isPlayerVanished(targetPlayer) && !isPlayerVanished(sender)
 
-            val targetPlayer = Bukkit.getPlayer(targetPlayerName)
-
-            if ((targetPlayer == null) || !targetPlayer.isOnline) {
+            if (targetPlayer == null || !targetPlayer.isOnline || hiddenFromSender) {
                 sender.sendMessage(config.messages.playernotfound.cparse())
                 return@checkPermission
             }
 
-            sender.sendMessage(
-                config.personalMessages.format
-                    .replace("{sender}","Я")
-                    .replace("{target}", targetPlayer.name)
-                    .replace("{message}", message)
-                    .stringToComponent()
-            )
-            targetPlayer.sendMessage(
-                config.personalMessages.format
-                    .replace("{target}","Я")
-                    .replace("{sender}", sender.name)
-                    .replace("{message}", message)
-                    .stringToComponent()
-            )
+            val personal = config.personalMessages
+            val message = minimessage.escapeTags(args.drop(1).joinToString(" "))
 
-            if (config.personalMessages.sound.isNotBlank()) {
-                targetPlayer.playSound(targetPlayer.location, config.personalMessages.sound, config.personalMessages.volume, config.personalMessages.pitch)
+            fun render(senderName: String, targetName: String) = personal.format
+                .replace("{sender}", senderName)
+                .replace("{target}", targetName)
+                .replace("{message}", message)
+                .stringToComponent()
+
+            sender.sendMessage(render(personal.self, targetPlayer.name))
+            targetPlayer.sendMessage(render(sender.name, personal.self))
+
+            if (personal.sound.isNotBlank()) {
+                targetPlayer.playSound(targetPlayer.location, personal.sound, personal.volume, personal.pitch)
             }
         }
         return true

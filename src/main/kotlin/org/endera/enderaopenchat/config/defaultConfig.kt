@@ -16,12 +16,12 @@ val defaultConfig = ConfigScheme(
             range = -2,
             sendToDiscord = true,
             usePermission = false,
-            format = "<red>[G] <reset>{player}: {message}"
-
+            format = "<red>[G] <reset>{player}: {message}",
         ),
     ),
     personalMessages = Msg(
         format = "<gray>[<dark_gray>{sender} <gray>-> <dark_gray>{target}<gray>]: <white>{message}",
+        self = "You",
         sound = "entity.player.levelup",
         volume = 1f,
         pitch = 1f,
@@ -36,18 +36,20 @@ val defaultConfig = ConfigScheme(
             message = "<gray>[<red>-<gray>] <white>{player} left the game"
         ),
         deathMessage = LeaveJoinDeathMessage(
-            enabled = true,
+            enabled = false,
             message = "<gray>[<red>☠<gray>] <white>{player} has died"
         ),
     ),
     messages = Messages(
         prefix = "<green>[EChat]<reset>",
         reload = "{prefix} Plugin configuration reloaded",
+        reloadfailed = "{prefix} <red>Failed to reload configuration, check the console",
         playernotfound = "{prefix} <red>Player not found",
         nochannelpermission = "{prefix} <red>You do not have permission to use this channel",
         localnoone = "<red>No players nearby!",
         usage = Usage(
-            msg = "{prefix} <red>Command usage: /msg (player) (message)"
+            msg = "{prefix} <red>Command usage: /msg (player) (message)",
+            echat = "{prefix} <red>Command usage: /echat reload",
         )
     )
 )
